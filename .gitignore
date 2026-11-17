@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# 备份与临时文件（agy 二进制 233MB，绝不入库）
+*.bak
+*.bak[0-9]*
+agy.exe*
+*.old-*
+*.running-*
+*.new
+
+# 本地产物
+models.json
+m[0-9].json
+models*.json
+.screenshots/
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
