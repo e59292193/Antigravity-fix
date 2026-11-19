@@ -27,7 +27,7 @@ def agy_pids():
     try:
         out = subprocess.run(
             ["tasklist", "/FI", "IMAGENAME eq agy.exe", "/FO", "CSV", "/NH"],
-            capture_output=True, text=True, timeout=20).stdout
+            capture_output=True, timeout=20).stdout.decode("gbk", "replace")
     except Exception:
         return []
     pids = []

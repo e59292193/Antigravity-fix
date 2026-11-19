@@ -106,7 +106,7 @@ python tools/fix_agy.py --restart
 ## 4. 防复发（打完补丁必做）
 
 agy 会**静默自动升级**，升级会把补丁整个覆盖掉（这是历史上"修好了又坏"的唯一原因）。
-三道防线，全部要有：
+四道防线，全部要有：
 
 ```bash
 # 防线 1：用户级环境变量（对所有后续进程生效）
@@ -117,13 +117,31 @@ attrib +R "%USERPROFILE%\.gemini\bin\agy.exe"
 attrib "%USERPROFILE%\.gemini\bin\agy.exe"     # 输出应带 R
 
 # 防线 3：从启动器启动 IDE（启动器里也注入了该变量）
+
+# 防线 4：自愈守护（最可靠的一道，必须装）
+python tools/heal_agy.py            # 立即检查，缺补丁就重打
+pythonw tools/heal_watch.py --rounds 12 --interval 30   # 后台盯 6 分钟
 ```
+
+防线 4 的落地方式（三选一，推荐全上）：
+
+- 启动器里 `start "" pythonw tools\heal_watch.py`（IDE 起完再盯梢）
+- 登录自启：`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`
+- 能建计划任务的环境：登录触发 + 每 10 分钟重复
 
 验证防线 1 已落地：
 
 ```bash
 reg query "HKCU\Environment" /v AGY_CLI_DISABLE_AUTO_UPDATE
 ```
+
+> **已知失效案例**：2026-11-19 开机后 agy 从 1.5.10 自动升到 1.5.12，防线 1 没能拦住
+> （hub 启动路径未走该分支），只读属性也被"改名+换文件"绕过。
+> 所以**不要只依赖防线 1/2**，防线 4 才是兜底。
+
+> **禁止用 ACL（`icacls /deny`）锁 `agy.exe`**：icacls 生成的拒绝 ACE 会连带
+> `SYNCHRONIZE`，文件连读都会被拒；且拒绝项优先级高于"所有者隐含权限"，
+> 事后 `Set-Acl` 都改不回来，只能整目录改名绕开，会留下删不掉的 200MB+ 垃圾。
 
 ---
 

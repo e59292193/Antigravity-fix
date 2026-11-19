@@ -4,6 +4,34 @@
 
 ---
 
+## v1.1.0 — 2026-11-19
+
+针对"重启后又被升级覆盖"的复发场景补齐兜底。
+
+**新增**
+
+- `tools/heal_agy.py` —— 自愈
+  - `(size, mtime)` 缓存判重，文件没变时几乎零开销
+  - 缺补丁则调用 `fix_agy.py` 重打，并恢复只读属性
+  - 只有"本次刚打过补丁"才结束 agy 进程，让 IDE 用新二进制重生
+- `tools/heal_watch.py` —— 盯梢
+  - 拉起 IDE 后按间隔轮询多轮，覆盖"升级包还没下完"的时间窗
+  - 配合启动器 / 登录自启使用，无需管理员权限
+- `AGENT.md` 新增"防线 4：自愈守护"，并写明**禁止用 ACL 锁 agy.exe** 的原因
+
+**修复**
+
+- `tools/fix_agy.py`、`tools/verify_hub.py`：`tasklist` 输出改为显式 `decode("gbk","replace")`
+  - 原写法 `text=True` 在 GBK 控制台会抛 `UnicodeDecodeError`，reader 线程崩溃后 stdout 变 `None`
+  - 表现：`--restart` 阶段报 `AttributeError: 'NoneType' object has no attribute 'splitlines'`
+
+**兼容性**
+
+- agy 1.5.12：`ValidateAndOnboardAccount` 入口 RVA `0x21c4720`，合格块 `0x21c4b7a`，
+  补丁字节仍是 `55 48 89 e5 e9 51 04 00 00`（rel=0x451），无需改代码
+
+---
+
 ## v1.0.0 — 2026-11-17
 
 首个公开版本，把 2026-09 至 2026-11 的完整排查成果沉淀为可复用工具包。
